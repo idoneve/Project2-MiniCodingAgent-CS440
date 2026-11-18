@@ -1,0 +1,92 @@
+{
+  "id": "20261118-144323-8a6930",
+  "created_at": "2026-11-18T20:43:23.948270+00:00",
+  "workspace_root": "C:\\Users\\nater\\lab4_qlearning_ws",
+  "history": [
+    {
+      "role": "user",
+      "content": "Solve Lab 4 with Q-learning: train the vacuum robot on the 4x4 grid and report the learned policy.",
+      "created_at": "2026-11-18T20:43:23.948270+00:00"
+    },
+    {
+      "role": "skill",
+      "content": "activated skill 'qlearning-experiments' (trigger=auto, score 0.634)",
+      "created_at": "2026-11-18T20:43:23.948270+00:00"
+    },
+    {
+      "role": "tool",
+      "name": "write_file",
+      "args": {
+        "path": "qLearning_Agent.py",
+        "content": "import random\nfrom collections import defaultdict\n\n\nclass QLearningAgent:\n    def __init__(self, learning_rate=0.1, discount_factor=0.9, epsilon=0.1):\n        self.alpha = learning_rate\n        self.gamma = discount_factor\n        self.epsilon = epsilon\n        self.qtable = defaultdict(float)\n\n    def chooseAction(self, state, validActions):\n        if random.random() < self.epsilon:\n            return random.choice(validActions)\n        else:\n            max_q = max(self.qtable[(state, a)] for a in validActions)\n            best_actions = [a for a in validActions if self.qtable[(state, a)] == max_q]\n            return random.choice(best_actions)\n\n    def updateQVal(self, state, action, reward, nextState, nextActions):\n        old_q = self.qtable[(state, action)]\n        if nextActions:\n            max_future_q = max(self.qtable[(nextState, a)] for a in nextActions)\n        else:\n            max_future_q = 0.0\n        new_q = old_q + self.alpha * (reward + self.gamma * max_future_q - old_q)\n        self.qtable[(state, action)] = new_q\n\n    def getActions(self, environment):\n        actions = []\n        for action, delta in ACTION_DELTAS.items():\n            next_row = environment.pos[0] + delta[0]\n            next_col = environment.pos[1] + delta[1]\n            if 0 <= next_row < len(environment.grid) and 0 <= next_col < len(environment.grid[0]):\n                cell = environment.grid[next_row][next_col]\n                if cell != \"X\":\n                    actions.append(action)\n        return actions\n\n\nACTION_DELTAS = {\"UP\": (-1, 0), \"DOWN\": (1, 0), \"LEFT\": (0, -1), \"RIGHT\": (0, 1)}\n"
+      },
+      "content": "wrote qLearning_Agent.py (1612 chars)",
+      "created_at": "2026-11-18T20:44:32.920063+00:00"
+    },
+    {
+      "role": "tool",
+      "name": "run_shell",
+      "args": {
+        "command": "python -m pytest -q Test/test_qlearning.py Test/test_strategy4.py",
+        "timeout": 120
+      },
+      "content": "exit_code: 2\nstdout:\n=================================== ERRORS ====================================\n___________________ ERROR collecting Test/test_qlearning.py ___________________\nImportError while importing test module 'C:\\Users\\nater\\lab4_qlearning_ws\\Test\\test_qlearning.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n..\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\importlib\\__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTest\\test_qlearning.py:7: in <module>\n    from trainVacuum import trainVacuum\nE   ModuleNotFoundError: No module named 'trainVacuum'\n=========================== short test summary info ===========================\nERROR Test/test_qlearning.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.16s\nstderr:\n(empty)",
+      "created_at": "2026-11-18T20:44:46.415132+00:00"
+    },
+    {
+      "role": "tool",
+      "name": "write_file",
+      "args": {
+        "path": "trainVacuum.py",
+        "content": "import random\nfrom agent_strategy4 import VacuumEnvironment, INITIAL_GRID\nfrom qLearning_Agent import QLearningAgent\n\n\ndef trainVacuum(episodes=1000, living_reward=-0.04,\n                learning_rate=0.1, discount_factor=0.9, epsilon=0.1):\n    agent = QLearningAgent(learning_rate, discount_factor, epsilon)\n    for _ in range(episodes):\n        env = VacuumEnvironment(INITIAL_GRID)\n        state = env.pos\n        for _ in range(100):\n            action = agent.chooseAction(state, agent.getActions(env))\n            env.step(action)\n            nextState = env.pos\n            reward = living_reward\n            cell = env.grid[nextState[0]][nextState[1]]\n            if isinstance(cell, (int, float)):\n                reward += cell\n            done = nextState == (3, 3)\n            nextActions = [] if done else agent.getActions(env)\n            agent.updateQVal(state, action, reward, nextState, nextActions)\n            state = nextState\n            if done:\n                break\n    return agent\n"
+      },
+      "content": "wrote trainVacuum.py (1007 chars)",
+      "created_at": "2026-11-18T20:45:30.677875+00:00"
+    },
+    {
+      "role": "tool",
+      "name": "run_shell",
+      "args": {
+        "command": "python -m pytest -q Test/test_qlearning.py Test/test_strategy4.py",
+        "timeout": 120
+      },
+      "content": "exit_code: 0\nstdout:\n..............                                                           [100%]\n14 passed in 0.06s\nstderr:\n(empty)",
+      "created_at": "2026-11-18T20:45:46.015593+00:00"
+    },
+    {
+      "role": "tool",
+      "name": "run_shell",
+      "args": {
+        "command": "python \"C:/Users/nater/Documents/Homework/Homework CSU/Project2-MiniCodingAgent-CS440-main/skills/qlearning-experiments/scripts/evaluate.py\" --episodes 1000 --living-reward -0.04 --alpha 0.1 --gamma 0.9 --epsilon 0.1 --seed 0",
+        "timeout": 120
+      },
+      "content": "exit_code: 0\nstdout:\nHyperparameters: episodes=1000, living_reward=-0.04, alpha=0.1, gamma=0.9, epsilon=0.1, seed=0\n\nGreedy policy (# = wall, G = +10 goal):\n>  >  v  v\n^  #  v  v\n>  >  >  v\n^  ^  ^  G\n\nMax Q-value per cell:\n   5.72    6.40    7.15    7.87\n   4.95       #    7.99    8.92\n   2.36    7.47    8.92    9.96\n   0.00    0.00    7.59    0.00\n\nGreedy path: (0, 0) -> (0, 1) -> (0, 2) -> (1, 2) -> (2, 2) -> (2, 3) -> (3, 3)\nReached +10 in 6 steps (shortest possible: 6)\n\nAcross 10 seeds: reached goal 100% of the time, mean 6.0 steps\nstderr:\n(empty)",
+      "created_at": "2026-11-18T20:46:10.487885+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "The Q-learning agent has been trained successfully on the 4x4 vacuum world.\n\n**Learned Greedy Policy:**\n```\n>  >  v  v\n^  #  v  v\n>  >  >  v\n^  ^  ^  G\n```\n(legend: `#` = wall, `G` = +10 goal)\n\n**Performance:**\n- Reached the +10 goal in exactly **6 steps** (the shortest possible path)\n- Success rate: **100%** across 10 random seeds\n- Mean steps to goal: **6.0**\n\n**Max Q-values per cell:**\n```\n   5.72    6.40    7.15    7.87\n   4.95       #    7.99    8.92\n   2.36    7.47    8.92    9.96\n   0.00    0.00    7.59    0.00\n```\n\n**Test Results:** All 14 tests passed.\n\nThe agent learned to navigate from (0,0) to (3,3) optimally using epsilon-greedy Q-learning with the specified hyperparameters (alpha=0.1, gamma=0.9, epsilon=0.1, living_reward=-0.04).",
+      "created_at": "2026-11-18T20:47:10.025019+00:00"
+    }
+  ],
+  "memory": {
+    "task": "Solve Lab 4 with Q-learning: train the vacuum robot on the 4x4 grid and report the learned policy.",
+    "files": [
+      "qLearning_Agent.py",
+      "trainVacuum.py"
+    ],
+    "notes": [
+      "write_file: wrote qLearning_Agent.py (1612 chars)",
+      "run_shell: exit_code: 2 stdout: =================================== ERRORS ==================================== ___________________ ERROR collecting Test/test_qlearning.py ___________________ ImportError while importing test module\n...[truncated 711 chars]",
+      "write_file: wrote trainVacuum.py (1007 chars)",
+      "run_shell: exit_code: 0 stdout: ..............                                                           [100%] 14 passed in 0.06s stderr: (empty)",
+      "run_shell: exit_code: 0 stdout: Hyperparameters: episodes=1000, living_reward=-0.04, alpha=0.1, gamma=0.9, epsilon=0.1, seed=0  Greedy policy (# = wall, G = +10 goal): >  >  v  v ^  #  v  v >  >  >  v ^  ^  ^  G  Max Q-value per ce\n...[truncated 338 chars]"
+    ]
+  },
+  "active_skill": {
+    "name": "qlearning-experiments",
+    "trigger": "auto",
+    "score": 0.6339,
+    "path": "C:\\Users\\nater\\Documents\\Homework\\Homework CSU\\Project2-MiniCodingAgent-CS440-main\\skills\\qlearning-experiments\\SKILL.md"
+  }
+}

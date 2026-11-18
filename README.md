@@ -63,9 +63,15 @@ This coding harness is organized around six practical building blocks:
 ```
 skills/
 ├── pr-review/SKILL.md
-└── vacuum-world-agent/          # Lab 5 skill
+├── vacuum-world-agent/          # Lab 5 workflow, recreated (run: lab4_skill_run/)
+│   ├── SKILL.md
+│   └── reference.md
+└── qlearning-experiments/       # Lab 5 Q-learning skill (run: lab4_qlearning_run/)
     ├── SKILL.md
-    └── reference.md
+    ├── reference.md
+    └── scripts/
+        ├── evaluate.py
+        └── sweep.py
 ```
 
 Skills are searched in `--skills-dir`, `<repo>/skills`, `<repo>/skill`,
@@ -93,6 +99,13 @@ REPL: `/skills`, `/skill <name> <request>`.
 The SDLC documents for this component are in [`sdlc/`](sdlc/)
 (intent → spec → plan → tests → verification), and the Lab 4 run that used
 the Lab 5 skill is recorded in [`lab4_skill_run/`](lab4_skill_run/).
+
+A second Lab 4 run uses the team's original Lab 5 Q-learning skill,
+`qlearning-experiments` (ported from the Lab 5 repo's hidden `.claude/skills/`
+folder). The agent writes the Q-learning agent, runs the tests, and runs the
+skill's `evaluate.py` to report the learned policy. See
+[`lab4_qlearning_run/`](lab4_qlearning_run/) and iteration 4 in
+[`sdlc/05-verification.md`](sdlc/05-verification.md).
 
 &nbsp;
 ## Requirements
