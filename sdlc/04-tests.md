@@ -45,3 +45,18 @@ uv run --with pytest python -m pytest -q
 ```
 
 Result at time of writing: **41 passed** (19 original + 22 new).
+
+## Iteration 4 additions
+
+| Test | Criterion |
+|------|-----------|
+| `test_repo_ships_lab5_qlearning_skill` | S5 (team's Lab 5 skill packaged, scripts + reference present) |
+| `test_repo_skills_route_each_lab4_prompt_to_its_own_skill` | S2 (Austin's prompt → `vacuum-world-agent`, Q-learning prompt → `qlearning-experiments`) |
+| `test_skill_dir_placeholder_becomes_absolute_forward_slash_path` | S4 (`{skill_dir}` in a skill body becomes the folder's absolute path, spaces included) |
+
+Workspace acceptance tests for the run: `lab4_qlearning_run/Test/test_qlearning.py`
+(7 tests: default hyperparameters, valid actions at walls/edges, Q-update
+formula, terminal update, greedy choice at epsilon 0, trainer arguments,
+trained policy reaches +10) plus Lab 4's `Test/test_strategy4.py` (7 tests).
+
+Result after iteration 4: **44 tests** in `tests/` (19 original + 25 skill tests).

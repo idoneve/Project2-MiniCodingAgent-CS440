@@ -47,3 +47,17 @@ T1 → T2 → T3 → T4 → T5 → T6 → T7 → T9
 | Small model (qwen3.5:4b) ignores long instructions | Skill written as short numbered steps; reference snippets in a separate `reference.md` the model reads with `read_file` |
 | Default `max_new_tokens=512` too small to write a whole agent file | Run Lab 4 with `--max-new-tokens 4096 --max-steps 14` |
 | False-positive skill activation | Threshold + distractor skill + negative unit test |
+
+## Iteration 4 work breakdown
+
+| # | Task | Files | Verifies |
+|---|------|-------|----------|
+| T13 | Port Lab 5 `.claude/skills/qlearning-experiments` into the skill folder format (front matter, `context`/`resources`, skill-directory paths) | `skills/qlearning-experiments/` | S5 |
+| T14 | Write `reference.md`: agent/trainer interface and Lab 5 team decisions | `skills/qlearning-experiments/reference.md` | S6 |
+| T15 | Build the clean Q-learning workspace and its acceptance tests | `lab4_qlearning_run/` | S6 |
+| T16 | Unit tests: skill ships; each Lab 4 prompt routes to its own skill | `tests/test_skills.py` | S2, S5 |
+| T17 | Live run with Ollama, copy logs, record result | `lab4_qlearning_run/`, `sdlc/05-verification.md` | S4, S6 |
+
+Risk: the two vacuum skills share words ("vacuum", "Lab 4", "q-learning").
+Mitigation: the new skill's triggers avoid `spec.md`/`vacuum agent`, and T16
+checks both prompts.

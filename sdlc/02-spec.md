@@ -139,3 +139,31 @@ All events also carry `ts` (UTC ISO-8601) and `session_id`.
 - The mini agent is run against that workspace with a plain prompt; the
   similarity check must select `vacuum-world-agent`, and the resulting
   `agent_strategy1.py` must pass `Test/test.py`.
+
+## 9. Iteration 4 — the team's original Lab 5 skill
+
+*(added after the verification in 05-verification.md)*
+
+The team's own Lab 5 skill was found in the Lab 5 repo's hidden
+`.claude/skills/qlearning-experiments/` folder (Claude Code format). It is
+added as a **second** skill next to `vacuum-world-agent`; nothing about §8
+changes.
+
+- **Port.** `skills/qlearning-experiments/` keeps the Lab 5 `SKILL.md` text
+  and both scripts (`evaluate.py`, `sweep.py`). Changes: front matter gets
+  `triggers`, `context: spec.md, Test/test_qlearning.py` and
+  `resources: reference.md`; commands use the `skill directory` shown in the
+  Active-skill section; `evaluate.py` uses the current directory as the
+  project root when `trainVacuum.py` is there (the Lab 5 layout still works).
+- **Project 2 step.** Step 1 tells the agent to write `qLearning_Agent.py`
+  and `trainVacuum.py` if they are missing, following `reference.md`
+  (interface + Lab 5 team decisions: only +10 is terminal, deterministic
+  moves, living reward -0.04, alpha 0.1, gamma 0.9, epsilon 0.1).
+- **Task.** "Solve Lab 4" as defined by Lab 5: Q-learning on the Lab 4 grid.
+  Clean workspace `lab4_qlearning_run/`: `agent_strategy4.py` (Lab 4
+  environment), `spec.md`, `Test/test_strategy4.py`, `Test/test_qlearning.py`;
+  no solution.
+- **Routing.** Austin's §8 prompt must still select `vacuum-world-agent`; the
+  prompt *"Solve Lab 4 with Q-learning: train the vacuum robot on the 4x4
+  grid and report the learned policy."* must select `qlearning-experiments`.
+  Neither prompt names a skill.

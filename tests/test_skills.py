@@ -305,3 +305,41 @@ def test_skill_context_and_resources_are_loaded_into_prompt(tmp_path):
     assert "OUTSIDE" not in prompt  # workspace path validation still applies
     executed = [event for event in read_log(tmp_path) if event["event"] == "skill_executed"][0]
     assert executed["loaded_files"] == ["spec.md", "Test/test_a.py", "ctx/ref.md"]
+
+
+# --- Lab 5 Q-learning skill (qlearning-experiments) -----------------------------
+
+AUSTIN_LAB4_PROMPT = "Solve Lab 4: implement the agent described in spec.md so that the tests in Test/ pass."
+QLEARNING_LAB4_PROMPT = (
+    "Solve Lab 4 with Q-learning: train the vacuum robot on the 4x4 grid and report the learned policy."
+)
+
+
+def test_repo_ships_lab5_qlearning_skill():
+    registry = SkillRegistry.discover([REPO_SKILLS])
+    skill = registry.get("qlearning-experiments")
+    assert skill is not None
+    assert skill.context == ["spec.md", "Test/test_qlearning.py"]
+    assert skill.resources == ["reference.md"]
+    for name in ("reference.md", "scripts/evaluate.py", "scripts/sweep.py"):
+        assert (skill.directory / name).is_file()
+
+
+def test_repo_skills_route_each_lab4_prompt_to_its_own_skill():
+    registry = SkillRegistry.discover([REPO_SKILLS])
+    skill, _ = registry.match(AUSTIN_LAB4_PROMPT)
+    assert skill.name == "vacuum-world-agent"  # recorded run in lab4_skill_run/ is unchanged
+    skill, _ = registry.match(QLEARNING_LAB4_PROMPT)
+    assert skill.name == "qlearning-experiments"
+
+
+def test_skill_dir_placeholder_becomes_absolute_forward_slash_path(tmp_path):
+    root = tmp_path / "skills dir with spaces"
+    write_skill(root, "runner", "runner", "Run the bundled widget script.", "widget",
+                body='Run: python "{skill_dir}/scripts/go.py"')
+    registry = SkillRegistry.discover([root])
+    agent = build_agent(tmp_path, ["<final>ok</final>"], registry=registry)
+    agent.ask("build a widget")
+    expected = (root / "runner").resolve().as_posix()
+    assert f'python "{expected}/scripts/go.py"' in agent.model_client.prompts[0]
+    assert "{skill_dir}" not in agent.model_client.prompts[0]

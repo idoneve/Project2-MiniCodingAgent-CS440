@@ -711,7 +711,7 @@ class MiniAgent:
             f"- skill directory: {directory}",
             "- Follow these instructions step by step. They override general habits.",
             "Skill instructions:",
-            clip(skill.body, SKILL_BODY_LIMIT),
+            clip(self.skill_body(skill), SKILL_BODY_LIMIT),
         ]
         files = self.skill_files(skill)
         if files:
@@ -719,6 +719,13 @@ class MiniAgent:
             for label, text in files:
                 lines.append(f"<file path=\"{label}\">\n{text}\n</file>")
         return "\n".join(lines)
+
+    @staticmethod
+    def skill_body(skill):
+        # {skill_dir} in a SKILL.md becomes the skill folder's absolute path, so commands
+        # that run a bundled script can be copied as-is. Forward slashes keep the path
+        # valid inside JSON tool calls on Windows too.
+        return skill.body.replace("{skill_dir}", skill.directory.resolve().as_posix())
 
     def skill_files(self, skill):
         # Loads the skill's declared workspace context files and bundled resources.
@@ -732,7 +739,7 @@ class MiniAgent:
                 except ValueError:
                     continue
                 if path.is_file() and not any(part in IGNORED_PATH_NAMES for part in path.relative_to(self.root).parts):
-                    candidates.append((str(path.relative_to(self.root)), path))
+                    candidates.append((path.relative_to(self.root).as_posix(), path))
         for name in skill.resources:
             path = (skill.directory / name).resolve()
             if path.is_file() and skill.directory.resolve() in path.parents:

@@ -76,3 +76,42 @@ was written from Lab 5's spec-driven workflow (spec → generate → test) and
 its Q-learning notes. If the team has its own Lab 5 `SKILL.md`, drop it into
 `skills/<name>/SKILL.md`, add `context:` / `resources:` lines if needed, and
 rerun the command above.
+
+## Iteration 4 — team's original Lab 5 skill (`qlearning-experiments`)
+
+See [02-spec.md §9](02-spec.md). Runs 1–3 above are unchanged.
+
+### Offline checks (no model)
+
+| Check | Result |
+|-------|--------|
+| Similarity check, Austin's §8 prompt | `vacuum-world-agent=0.586`, `qlearning-experiments=0.049`, `pr-review=0.013` → `vacuum-world-agent`. Run 3 logged 0.590 with two skills; the small drift comes from adding a third skill to the TF-IDF corpus. |
+| Similarity check, Q-learning prompt | `qlearning-experiments=0.634`, `vacuum-world-agent=0.502`, `pr-review=0.000` → `qlearning-experiments` |
+| Skill scripts against the team's Lab 5 code | `evaluate.py` (seed 0): greedy path reaches +10 in 6 steps (shortest possible), 100% over 10 seeds |
+| Workspace tests against the team's Lab 5 code | `14 passed` |
+| Scripted run with `FakeModelClient` | skill auto-selected, prompt carries spec + tests + reference, files written, tests and `evaluate.py` run through `run_shell` |
+
+### Live run (Ollama `qwen3.5:4b`)
+
+Command and prompt: [`../lab4_qlearning_run/RUN.md`](../lab4_qlearning_run/RUN.md).
+
+| Run | Result |
+|-----|--------|
+| 4a (Windows, CPU) | Selected `qlearning-experiments` (0.634 vs `vacuum-world-agent` 0.502). Agent wrote `qLearning_Agent.py` and `trainVacuum.py` from reference.md; workspace tests **14 passed**. It then ran `python "qlearning-experiments/scripts/evaluate.py"`: the model shortened the `SKILL_DIR` placeholder to the skill's name instead of the absolute path, the file was not found, and it spent the remaining steps on `list_files` retries. Stopped at the 14-step limit with no final answer. |
+| 4b (Windows, CPU, after the fix) | **Pass.** Selected `qlearning-experiments` (0.634). Agent wrote `qLearning_Agent.py` and `trainVacuum.py`, workspace tests **14 passed**, ran `evaluate.py` from the skill folder: greedy policy reaches +10 in **6 steps** (shortest possible), **100%** over 10 seeds, mean 6.0 steps. Final answer reports the policy grid and Q-values from the script output. |
+
+**Fix after run 4a.** Substituting a placeholder is unreliable for a 4B model,
+so the component now does it: `MiniAgent.skill_body()` replaces `{skill_dir}`
+in a skill's body with the skill folder's absolute path (forward slashes, so
+it stays valid inside a JSON tool call on Windows and survives spaces in the
+path when quoted). `qlearning-experiments/SKILL.md` uses `{skill_dir}` and
+tells the model to copy commands exactly. Test:
+`test_skill_dir_placeholder_becomes_absolute_forward_slash_path`.
+
+**Windows path fix.** `skill_files()` labels preloaded files with
+`relative_to(root).as_posix()` instead of `str(...)`, so labels and the
+`loaded_files` log field read `Test/test_qlearning.py` on Windows too
+(`test_skill_context_and_resources_are_loaded_into_prompt` failed on Windows
+before this change; macOS output is unchanged).
+
+Artifacts in `lab4_qlearning_run/logs/`: run 4b `skills.jsonl`, `session.json`, `console_output.txt`; run 4a `run4a_session.json`.
